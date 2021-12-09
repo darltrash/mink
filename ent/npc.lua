@@ -47,7 +47,7 @@ return {
                 if self.timer > 1 and self.tooltipLimit < self.tooltipLength then
                     self.dialogSound:setVolume(3)
                     self.tooltipLimit = self.tooltipLimit+1
-                    self.dialogSound:stop()
+                    --self.dialogSound:stop()
                     self.dialogSound:play()
                     self.timer = 0
                 end

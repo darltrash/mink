@@ -6,7 +6,7 @@ return {
         self:say(lang.clonegoat_b_03)
         self:say(lang.clonegoat_b_04)
 
-        self:move(-50, 0, 1)
+        --self:move(-50, 0, 1)
         
         self.destroy = true
     end
