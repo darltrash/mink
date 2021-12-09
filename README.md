@@ -64,5 +64,5 @@ Set the following environment variables for debug features:
 Feel free to contribute on everything you want! Though I might take some time to reply to PRs :(
 
 ## > License:
-Check out the [LICENSE file](LICENSE) at this repo which covers all the `.lua`, `.glsl` and `.toml` files. <br>
+Check out the [LICENSE file](LICENSE) at this repo which covers all the `.lua`, `.glsl` and `.toml` files which do not contain their own licenses. <br>
 Check out the [CC-BY-SA 4.0 License](https://creativecommons.org/licenses/by-sa/4.0/) which covers all non-code assets (`.png`, `.mp3`, `.wav`) not explicitly set with a different license
