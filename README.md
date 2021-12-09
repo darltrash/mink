@@ -8,6 +8,7 @@ This is another little game experiment I have coded in Lua targetting Löve; It 
 <kbd>C Key</kbd>: **SCREAM!!!!!** <br>
 <kbd>X Key</kbd>: Wall-grab <br>
 <kbd>A Key</kbd>: Pet <br>
+<kbd>S Key</kbd>: Continue dialogue <br>
 <kbd>D Key</kbd>: Use <br>
 
 ## > Roadmap:
