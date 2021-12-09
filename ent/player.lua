@@ -36,12 +36,11 @@ return {
         self.wallGrabbing = false
         self.canWallgrab = (self.canWallgrab or self.onFloor or not self.onWall) and not self.screaming
 
-        if self.impactY > 0.18 then
-            world:addEntity("dust", { x = self.x-8, y = self.y })
-        end
-
         if self.onFloor then
             self.jumpValue = 0
+            if self.impactY > 0.18 then
+                world:addEntity("dust", { x = self.x-8, y = self.y })
+            end
         elseif self.onWall and control.grab and self.canWallgrab then
             self.gravAccel = 0
             self.jumpValue = 0
