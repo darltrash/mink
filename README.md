@@ -1,6 +1,8 @@
 # Mink, ANOTHER game experiment.
 This is another little game experiment I have coded in Lua targetting Löve; It currently only works in desktop and ***has only been tested toroughly in Linux*** with both **Wayland** and **X11**
 
+![Screenshot](READMESCREENSHOT.png)
+
 ## > Controls:
 <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd>: Movement <br>
 <kbd>Spacebar</kbd>: Jump <br>
