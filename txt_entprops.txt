@@ -1,0 +1,11 @@
+(false)           asleep: if entity should NOT be processed nor affected by gravity
+(false)        invisible: if entity should NOT be drawn
+(false) destroyOffScreen: if entity should be destroyed when out of screen
+(false) processOffScreen: if entity should be processed when out of screen 
+
+(0, 0, 0) x, y, z: position
+(0, 0)     vx, vy: velocity 
+(0)     gravAccel: gravity acceleration, increases every time if NOT asleep
+
+(false) onFloor: if entity is on the floor 
+(false)  onWall: if entity is touching wall, normal (-1, 1) if so, false if not.

@@ -1,0 +1,95 @@
+[fonts]
+    [fonts.main]
+        file = "ass/fnt_PixeloidSans.ttf"
+        size = 9
+
+    [fonts.bold]
+        file = "ass/fnt_PixeloidSans-Bold.ttf"
+        size = 9
+
+[shaders]
+    [shaders.background]
+        file = "ass/shd_background.glsl"
+    
+[atlases]
+    [atlases.blank]
+        file = "ass/spr_blank.png"
+        width = 1
+        height = 1
+    
+    [atlases.tileset0]
+        file = "ass/atl_test.png"
+        width = 8
+        height = 8
+
+    [atlases.spritesheet0]
+        file = "ass/atl_test2.png"
+        width = 8
+        height = 8
+
+    [atlases.player0]
+        file = "ass/atl_player.png"
+        width = 32
+        height = 32
+
+    [atlases.test_boombox]
+        file = "ass/atl_boombox.png"
+        width = 32
+        height = 32
+
+    [atlases.dog]
+        file = "ass/atl_dog.png"
+        width = 32
+        height = 32
+
+    [atlases.dust]
+        file = "ass/atl_dust0.png"
+        width = 32
+        height = 32
+
+    [atlases.flowa]
+        file = "ass/atl_mrflowa.png"
+        width = 32
+        height = 32
+    
+    [atlases.angeldeer]
+        file = "ass/atl_angeldeer.png"
+        width = 30
+        height = 28
+
+    [atlases.hgradient]
+        file = "ass/atl_hgradient.png"
+        width = 1
+        height = 100
+
+    [atlases.font]
+        file = "ass/atl_mainfont.png"
+        width = 6
+        height = 6
+        map = "ABCDEFGHIJKLMN_OPQRSTUVWXYZabcdefghijklmn_opqrstuvwxyz0123456789!?.,"
+
+[sounds]
+    [sounds.footsteps]
+        file = "ass/snd_footsteps.wav"
+
+    [sounds.plink]
+        file = "ass/snd_plink.wav"
+    
+    [sounds.scream]
+        file = "ass/snd_scream.wav"
+
+    [sounds.bark]
+        file = "ass/snd_dog.wav"
+
+[music]
+    [music.purple]
+        file = "ass/mus_purpleloop.mp3"
+
+    [music.hourstraight]
+        file = "ass/mus_hourstraight.mp3"
+
+    [music.mink]
+        file = "ass/mus_mink.mp3"
+
+    [music.breakdance]
+        file = "ass/mus_breakdance.mp3"
