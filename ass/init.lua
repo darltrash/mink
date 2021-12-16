@@ -151,9 +151,13 @@ for key, atlas in pairs(data.atlases or {}) do
     log.assert(type(atlas.width)=="number", "width property expected to be number, got '%s'!", type(atlas.width))
     log.assert(type(atlas.height)=="number", "height property expected to be number, got '%s'!", type(atlas.height))
     log.assert(type(atlas.map or "")=="string", "map property expected to be string or nil, got %s", type(atlas.map))
+    log.assert((type(atlas.filter)=="string" and (atlas.filter == "nearest" or atlas.filter == "linear")) or atlas.filter == nil,
+        "filter property expected to be 'nearest', 'linear' or nil, got %s, value '%s'", type(atlas.filter), atlas.filter)
 
+    local texture = lg.image(atlas.file)
+    texture:setFilter(atlas.filter or "nearest", atlas.filter or "nearest")
     data.atlases[key] = {
-        texture = lg.image(atlas.file),
+        texture = texture,
         w = atlas.width,
         h = atlas.height
     }
@@ -163,11 +167,11 @@ for key, atlas in pairs(data.atlases or {}) do
         local atl = data.atlases[key]
         local x, y = 0, 0
         for c in atlas.map:gmatch(".") do
-            if (x*atl.w)>atl.texture:getWidth() then
+            if (x*atl.w)>texture:getWidth() then
                 x = 0
                 y = y + 1
             end
-            map[c] = lg.quad(x*atl.w, y*atl.h, atl.w, atl.h, atl.texture:getWidth(), atl.texture:getHeight())
+            map[c] = lg.quad(x*atl.w, y*atl.h, atl.w, atl.h, texture:getWidth(), texture:getHeight())
             x = x + 1
         end
         atl.map = map

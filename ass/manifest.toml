@@ -10,6 +10,9 @@
 [shaders]
     [shaders.background]
         file = "ass/shd_background.glsl"
+
+    [shaders.oklahoma]
+        file = "ass/shd_oklahoma.glsl"
     
 [atlases]
     [atlases.blank]
@@ -61,6 +64,17 @@
         file = "ass/atl_hgradient.png"
         width = 1
         height = 100
+    
+    [atlases.screw]
+        file = "ass/atl_screw.png"
+        width = 128
+        height = 16
+
+    [atlases.circle]
+        file = "ass/spr_circle.png"
+        width = 512
+        height = 512
+        filter = "linear"  
 
     [atlases.font]
         file = "ass/atl_mainfont.png"

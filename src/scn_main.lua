@@ -4,6 +4,9 @@ local lang  = require "lan"
 
 return {
     init = function (self)
+        world.currentLevel = world:addLevel()
+
+
         world:square(-40, -20, 44, 54)
         world:square(5, 10, 15, 14)
         world:square(21, 0, 30, 24)
@@ -12,12 +15,19 @@ return {
         world:addEntity("player",  { y = -30, x =  50 })
         world:addEntity("boombox", { x = 360, y = -10 })
         world:addEntity("doggo",   { x = 200, y = -10 })
-        world:addEntity("npc",     { x = 480, y =  30,   sprite = world.sprite("flowa", 0, 0, 1, 1), script = require("scr.000_mrflower") })
+        world:addEntity("npc",     { x = 480, y =  30,   sprite = world.sprite("flowa",   0, 0, 1, 1), script = require("scr.000_mrflower") })
         world:addEntity("npc",     { x = -200, y = -200, sprite = world.sprite("player0", 0, 0, 1, 1), script = require("scr.000_clonegoat")})
 
         world:addEntity("npc", { x = 770, y = 30, sprite = world.sprite("angeldeer", 0, 0, 1, 1),
             collider = world.collider(30, 28, COLLIDER_TYPE_NPC), script = require("scr.000_deertransport")
         })
+
+        --world:addEntity("screw", {
+        --    x = 824, y = 48
+        --})
+
+        world.currentLevel.enableStars = true
+        world.currentLevel.enableParticles = true
     end,
 
     mousepressed = function(self, x, y, btn)

@@ -47,44 +47,41 @@ table.sort(stars, function(a, b) return a.s > b.s end)
 
 lm.setRandomSeed(lt.getTime()*9000)
 
-local world = {
-    entities = {}, tiles = {},
-    camera = { x = 0, y = -140, s = 3 },
+local sprite = lume.memoize(function(s, x, y, w, h)
+    -- This assert thing is SUPER SLOW, thankfully this is all memoized
+
+    log.assert(type(x) == "number", "Expected number as X, got %s!", type(x))
+    log.assert(type(y) == "number", "Expected number as Y, got %s!", type(y))
+    log.assert(type(w) == "number", "Expected number as W, got %s!", type(w))
+    log.assert(type(h) == "number", "Expected number as H, got %s!", type(h))
+
+    local t = log.assert(assets.atlases[s], "Atlas %s not found!", s)
+
+    return {
+        texture = t.texture, __sprite = true, 
+        quad = lg.quad (        -- m e t a m e m o i z e
+            x * t.w, y * t.h,
+            w * t.w, h * t.h,
+            t.texture:getWidth(), 
+            t.texture:getHeight()
+        ),
+        w = w * t.w, h = h * t.h
+    }
+end)
+
+local collider = lume.memoize(function(w, h, t)
+    log.assert(type(w) == "number", "Expected number as W, got %s!", type(w))
+    log.assert(type(h) == "number", "Expected number as H, got %s!", type(h))
+    return { w = w, h = h, type = t or -1 }
+end)
+
+local _level = {
     background1 = lume.scolor("#5f00d4"),
     background2 = lume.scolor("#c12fd1"),
-    collision = require("lib.bump").newWorld(),
-    player = {}, stars = stars,
-
-    square = function(world, x, y, w, h)
-        for _x=x, (x+w) do
-            if lm.random(1, 3)==1 then
-                world:addTile(_x, y-1, "tileset0", lm.random(1, 2), 3, false)
-            end
-        end
-        for _x=x+1, (x+w)-1 do
-            world:addTile(_x, y,   "tileset0", 1, 2)
-            world:addTile(_x, y+h, "tileset0", 1, 0)
-        end
-
-        for _y=y+1, (y+h)-1 do
-            world:addTile(x, _y,   "tileset0", 2, 1)
-            world:addTile(x+w, _y, "tileset0", 0, 1)
-        end
-
-        world:addTile(x+w, y, "tileset0", 5, 0)
-        world:addTile(x, y+h, "tileset0", 4, 0)
-        world:addTile(x+w, y+h, "tileset0", 6, 0)
-
-        for _x=x+1, (x+w)-1 do
-            for _y=y+1, (y+h)-1 do
-                world:addTile(_x, _y, "tileset0", 3, 1)
-            end
-        end
-        world:addTile(x, y, "tileset0", 3, 0, true, w+1, h+1)
-    end,
+    name = "UNNAMED",
 
     addEntity = function(self, sys, tab)
-        log.info("Attempting to create %s", sys)
+        log.info("Attempting to create %s for level %s", sys, self.name)
         local s = log.assert(self.entityTypes[sys], "System %s not found!", sys)
         local ent = lume.extend(lume.clone(s), tab)
         table.insert(self.entities, ent)
@@ -114,41 +111,68 @@ local world = {
         table.insert(self.tiles, tile)
     end,
 
-    sprite = lume.memoize(function(s, x, y, w, h)
-        -- This assert thing is SUPER SLOW, thankfully this is all memoized
+    sprite = sprite,
+    collider = collider
+}
 
-        log.assert(type(x) == "number", "Expected number as X, got %s!", type(x))
-        log.assert(type(y) == "number", "Expected number as Y, got %s!", type(y))
-        log.assert(type(w) == "number", "Expected number as W, got %s!", type(w))
-        log.assert(type(h) == "number", "Expected number as H, got %s!", type(h))
+local world = {
+    camera = { x = 0, y = -140, s = 3 },
+    stars = stars, levels = {},
 
-        local t = log.assert(assets.atlases[s], "Atlas %s not found!", s)
+    square = function(world, x, y, w, h)
+        for _x=x, (x+w) do
+            if lm.random(1, 3)==1 then
+                world:addTile(_x, y-1, "tileset0", lm.random(1, 2), 3, false)
+            end
+        end
+        for _x=x+1, (x+w)-1 do
+            world:addTile(_x, y,   "tileset0", 1, 2)
+            world:addTile(_x, y+h, "tileset0", 1, 0)
+        end
 
-        return {
-            texture = t.texture, __sprite = true, 
-            quad = lg.quad (        -- m e t a m e m o i z e
-                x * t.w, y * t.h,
-                w * t.w, h * t.h,
-                t.texture:getWidth(), 
-                t.texture:getHeight()
-            ),
-            w = w * t.w, h = h * t.h
-        }
-    end),
+        for _y=y+1, (y+h)-1 do
+            world:addTile(x, _y,   "tileset0", 2, 1)
+            world:addTile(x+w, _y, "tileset0", 0, 1)
+        end
 
-    collider = lume.memoize(function(w, h, t)
-        log.assert(type(w) == "number", "Expected number as W, got %s!", type(w))
-        log.assert(type(h) == "number", "Expected number as H, got %s!", type(h))
-        return { w = w, h = h, type = t or -1 }
-    end),
+        world:addTile(x+w, y, "tileset0", 5, 0)
+        world:addTile(x, y+h, "tileset0", 4, 0)
+        world:addTile(x+w, y+h, "tileset0", 6, 0)
+
+        for _x=x+1, (x+w)-1 do
+            for _y=y+1, (y+h)-1 do
+                world:addTile(_x, _y, "tileset0", 3, 1)
+            end
+        end
+        world:addTile(x, y, "tileset0", 3, 0, true, w+1, h+1)
+    end,
+
+    addLevel = function (self, extension)
+        local l = lume.extend(lume.extend(lume.clone(_level), {
+            entities = {}, tiles = {}, player = {}, collision = require("lib.bump").newWorld()
+        }), extension)
+        table.insert(self.levels, l)
+        return l
+    end,
+
+    collider = collider,
+    sprite = sprite,
+
+    addEntity = function(self, ...)
+        return self.currentLevel:addEntity(...)
+    end,
+
+    addTile = function(self, ...)
+        return self.currentLevel:addTile(...)
+    end,
 
     entitySort = function(a, b) return (a.z or 0) < (b.z or 0) end,
 
     entOnScreen = function (self, ent)
         local entW, entH = 8, 8
         if ent.sprite then
-            entW = ent.sprite.w * (ent.scaleX or 1)
-            entH = ent.sprite.h * (ent.scaleY or 1)
+            entW = (ent.sprite.w or ent.w) * (ent.scaleX or 1)
+            entH = (ent.sprite.h or ent.h) * (ent.scaleY or 1)
         end
 
         return AABB(
@@ -159,6 +183,9 @@ local world = {
     end,
 
     loop = function (self, delta)
+        local level = self.currentLevel
+        if not level then return end
+
         local w, h = lg.getDimensions()
         self.camera.s = math.max(1, math.floor(math.max(w, h)/250))
         self.screenW = w / self.camera.s
@@ -176,7 +203,7 @@ local world = {
 
         local nextGen = {}
         local processed = 0
-        for _, ent in ipairs(self.entities) do
+        for _, ent in ipairs(level.entities) do
             local entOnScreen = self:entOnScreen(ent)
             if (not ent.asleep) and (entOnScreen or ent.processOffScreen)  then
                 ent.onScreen = entOnScreen
@@ -189,9 +216,9 @@ local world = {
 
                 ent.gravAccel = (ent.gravAccel or 1) + delta*600
 
-                if self.collision:hasItem(ent) then
+                if level.collision:hasItem(ent) then
                     local _goalX, _goalY = goalX, goalY
-                    goalX, goalY, ent.collider.cols = self.collision:move(ent, goalX, goalY, COLLIDER_FILTER)
+                    goalX, goalY, ent.collider.cols = level.collision:move(ent, goalX, goalY, COLLIDER_FILTER)
                     ent.onFloor = _goalY > goalY
                     ent.onWall = (goalX-_goalX ~= 0) and lume.sign(goalX-_goalX)
                     ent.gravAccel = ent.onFloor and 1 or ent.gravAccel
@@ -221,8 +248,8 @@ local world = {
             end
 
             if ent.destroy or (ent.destroyOffScreen and not entOnScreen) then
-                if self.collision:hasItem(ent) then
-                    self.collision:remove(ent)
+                if level.collision:hasItem(ent) then
+                    level.collision:remove(ent)
                 end
             else
                 table.insert(nextGen, ent)
@@ -230,10 +257,10 @@ local world = {
         end
 
         table.sort(nextGen, self.entitySort)
-        self.entities = nextGen
+        level.entities = nextGen
 
         if DEBUGMODE then
-            self.__debugInfo = ("entity amount: %s\nentities processed: %s"):format(#self.entities, processed)
+            self.__debugInfo = ("entity amount: %s\nentities processed: %s"):format(#level.entities, processed)
         end
         return #nextGen
     end,
@@ -263,6 +290,9 @@ local world = {
     end,
 
     draw = function (self)
+        local level = self.currentLevel
+        if not level then return end
+
         local mx, my = lc.getPosition()
         mx = ((mx/self.camera.s)+self.camera.x)-(self.screenW/2)
         my = ((my/self.camera.s)+self.camera.y)-(self.screenH/2)
@@ -275,19 +305,19 @@ local world = {
         lg.push()
         lg.setCanvas(self.mainCanvas)
             lg.clear()
-            if not self.tiles.baked then
-                self.tiles.baked = lg.newCanvas(self.tiles.width or 1, self.tiles.height or 1)
+            if not level.tiles.baked then
+                level.tiles.baked = lg.newCanvas(level.tiles.width or 1, level.tiles.height or 1)
                 
                 lg.push()
-                lg.setCanvas(self.tiles.baked)
-                    for _, tile in ipairs(self.tiles) do
+                lg.setCanvas(level.tiles.baked)
+                    for _, tile in ipairs(level.tiles) do
                         lg.setColor(tile.color or COLOR_WHITE)
-                        lg.draw(tile.sprite.texture, tile.sprite.quad, tile.x-self.tiles.offsetX, tile.y-self.tiles.offsetY)
+                        lg.draw(tile.sprite.texture, tile.sprite.quad, tile.x-level.tiles.offsetX, tile.y-level.tiles.offsetY)
 
                         if DEBUGMODE and tile.collider then
                             lg.setColor(1, 0, 0, 0.2)
-                            lg.rectangle("fill", tile.x-self.tiles.offsetX, tile.y-self.tiles.offsetY, tile.collider.w, tile.collider.h)
-                            lg.rectangle("line", tile.x-self.tiles.offsetX, tile.y-self.tiles.offsetY, tile.collider.w, tile.collider.h)
+                            lg.rectangle("fill", tile.x-level.tiles.offsetX, tile.y-level.tiles.offsetY, tile.collider.w, tile.collider.h)
+                            lg.rectangle("line", tile.x-level.tiles.offsetX, tile.y-level.tiles.offsetY, tile.collider.w, tile.collider.h)
                         end
                     end
                 lg.setCanvas()
@@ -303,11 +333,16 @@ local world = {
             )
 
             lg.setColor(COLOR_WHITE)
-            lg.draw(self.tiles.baked, self.tiles.offsetX, self.tiles.offsetY)
-            for _, ent in ipairs(self.entities) do
+            lg.draw(level.tiles.baked, level.tiles.offsetX, level.tiles.offsetY)
+            for _, ent in ipairs(level.entities) do
                 if ent.invisible or not (ent.sprite and self:entOnScreen(ent)) then goto continue end
                 local color = ent.color or COLOR_WHITE
                 lg.setColor(color)
+
+                if ent.draw then
+                    ent:draw()
+                    goto continue
+                end
 
                 if ent.preSprite then
                     lg.draw(
@@ -342,12 +377,12 @@ local world = {
                 if ent.tooltipAlpha>0 then
                     local fnt = assets.fonts.main
                     local w, h = ent.tooltipWidth, ent.tooltipHeight
-                    local ew = ent.sprite.w
-                    local eh = ent.sprite.h
+                    local ew = ent.sprite.w or ent.w or 0
+                    local eh = ent.sprite.h or ent.h or 0
                     local x = (ent.x+(ent.offsetX or 0)+(ew/2))-(w/2)
                     local y = (ent.y+(ent.offsetY or 0)+(math.sin(lt.getTime()*2)*ent.tooltipAlpha*3))-(h+4)
                     
-                    lg.setColor(self.background1[1]-0.3, self.background1[2]-0.3, self.background1[3]-0.3, ent.tooltipAlpha)
+                    lg.setColor(level.background1[1]-0.3, level.background1[2]-0.3, level.background1[3]-0.3, ent.tooltipAlpha)
                     lg.rectangle("fill", x, y, w, h, 2)
                     local ox = (w/2)-8
                     ---@diagnostic disable-next-line: redundant-parameter
@@ -360,16 +395,17 @@ local world = {
 
                     if ent.tooltipText then
                         lg.setColor(0, 0, 0, ent.tooltipAlpha)
-                        utils.print(fnt, ent.tooltipText, x+4, y+3, nil, 1, ent.tooltipLimit, assets.fonts.bold)
+                        local limit = (ent.tooltipLimit == -1) and #ent.tooltipText or ent.tooltipLimit
+                        utils.print(fnt, ent.tooltipText, x+4, y+3, nil, 1, limit, assets.fonts.bold)
 
-                        lg.setColor(self.background2[1]+0.7, self.background2[2]+0.7, self.background2[3]+0.7, ent.tooltipAlpha)
-                        utils.print(fnt, ent.tooltipText, x+4, y+2, {1, 0.6, 0.9, 1}, 1, ent.tooltipLimit, assets.fonts.bold)
+                        lg.setColor(level.background2[1]+0.7, level.background2[2]+0.7, level.background2[3]+0.7, ent.tooltipAlpha)
+                        utils.print(fnt, ent.tooltipText, x+4, y+2, {1, 0.6, 0.9, 1}, 1, limit, assets.fonts.bold)
                     else
                         lg.setColor(0, 0, 0, ent.tooltipAlpha)
                         lg.line(x+4, y+3, x+8, y+7)
                         lg.line(x+12, y+3, x+8, y+7)
 
-                        lg.setColor(self.background2[1]+0.7, self.background2[2]+0.7, self.background2[3]+0.7, ent.tooltipAlpha)
+                        lg.setColor(level.background2[1]+0.7, level.background2[2]+0.7, level.background2[3]+0.7, ent.tooltipAlpha)
                         lg.line(x+4, y+2, x+8, y+6)
                         lg.line(x+12, y+2, x+8, y+6)
                     end
@@ -382,19 +418,34 @@ local world = {
         lg.pop()
 
         -- ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        lg.setColor(self.background1)
+        
+        lg.setColor(level.background1)
         lg.rectangle("fill", 0, 0, w, h)
-        lg.setColor(self.background2)
+        lg.setColor(level.background2)
         lg.draw(assets.atlases.hgradient.texture, 0, 0, 0, w, h/100)
 
-        for _, star in ipairs(self.stars) do
-            lg.setColor(1, 1, 1, (1-star.a)*0.2)
+        if level.enableStars then
+            for _, star in ipairs(self.stars) do
+                lg.setColor(1, 1, 1, (1-star.a)*0.2)
 
-            local x, y = star.x*w, star.y*h
-            local m = star.s*self.camera.s*3
-            ---@diagnostic disable-next-line: redundant-parameter
-            lg.polygon("fill", x-m, y, x, y-m, x+m, y, x, y+m)
+                local x, y = star.x*w, star.y*h
+                local m = star.s*self.camera.s*3
+                ---@diagnostic disable-next-line: redundant-parameter
+                lg.polygon("fill", x-m, y, x, y-m, x+m, y, x, y+m)
+            end
+        end
+
+        if level.enableParticles then
+            for _, star in ipairs(self.stars) do
+                if star.s < 0.9 then
+                    local x, y = ((star.y*w)-(self.camera.x*2*star.s))%w, (star.x*3*h)%h
+                    local m = star.s*self.camera.s*1
+                    
+                    lg.setColor(1, 1, 1, (star.x) * star.s)
+                    ---@diagnostic disable-next-line: redundant-parameter
+                    lg.polygon("fill", x-m, y, x, y-m, x+m, y, x, y+m)
+                end
+            end
         end
 
         lg.setColor(0, 0, 0, 0.2)
@@ -402,16 +453,20 @@ local world = {
         lg.setColor(COLOR_WHITE)
         lg.draw(self.mainCanvas)
 
-        for _, star in ipairs(self.stars) do
-            local x, y = ((star.y*w)-(self.camera.x*2*star.s))%w, (star.x*3)*h
-            local m = star.s*self.camera.s*1
-            
-            lg.setColor(1, 1, 1, (1-star.a)*0.4*(star.x*10))
-            ---@diagnostic disable-next-line: redundant-parameter
-            lg.polygon("fill", x-m, y, x, y-m, x+m, y, x, y+m)
+        if level.enableParticles then
+            for _, star in ipairs(self.stars) do
+                if star.s > 0.9 then
+                    local x, y = ((star.y*w)-(self.camera.x*2*star.s))%w, (star.x*3*h)%h
+                    local m = star.s*self.camera.s*1
+                    
+                    lg.setColor(1, 1, 1, (star.x) * star.s)
+                    ---@diagnostic disable-next-line: redundant-parameter
+                    lg.polygon("fill", x-m, y, x, y-m, x+m, y, x, y+m)
+                end
+            end
         end
 
-        lg.setColor(self.background2[1], self.background2[2], self.background2[3], 0.25)
+        lg.setColor(level.background2[1], level.background2[2], level.background2[3], 0.25)
         lg.draw(assets.atlases.hgradient.texture, 0, 0, 0, w, h/100)
 
         -- ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -432,7 +487,7 @@ local world = {
 
         local ns = 1000000000
         local ou = 0
-        for _, ent in ipairs(self.entities) do
+        for _, ent in ipairs(level.entities) do
             local color = ent.color or COLOR_WHITE
 
             if ent.collider then
@@ -455,7 +510,7 @@ local world = {
             local txt = ("name: *%s*\nprocess: *%.0fns*"):format(ent.__name or "UNKNOWN", (ent.__processTime or 0)*ns)
             local h = fnt:getHeight(txt)
             utils.print(
-                fnt, txt, lume.round(ent.x, si), lume.round(ent.y-(h), si), {1, 1, 1, 1}, 1/self.camera.s
+                fnt, txt, lume.round(ent.x, si), lume.round(ent.y-(h*(1/self.camera.s)*5), si), {1, 1, 1, 1}, (1/self.camera.s)*2
             )
             
             ou = ou + (ent.__processTime or 0)
@@ -467,5 +522,6 @@ local world = {
 }
 package.loaded.world = world
 world.entityTypes = require("ent")
+_level.entityTypes = require("ent")
 
 return world

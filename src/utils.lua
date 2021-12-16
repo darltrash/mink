@@ -34,7 +34,7 @@ return {
         local movey = false
         local count = 1
         for c in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-            if count > (limit or 0) then break end
+            if count > (limit or #text) then break end
             if c == "\n" then
                 x_ = x
                 y_ = y_ + cfont:getHeight(c) * scale
